@@ -5,8 +5,9 @@ import (
 	"reflect"
 	"strings"
 
+	"log/slog"
+
 	"github.com/samber/lo"
-	"golang.org/x/exp/slog"
 )
 
 type Converter func(loggerAttr []slog.Attr, record slog.Record) map[string]any

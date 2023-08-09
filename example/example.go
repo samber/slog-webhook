@@ -7,7 +7,7 @@ import (
 
 	slogwebhook "github.com/samber/slog-webhook"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 func main() {
