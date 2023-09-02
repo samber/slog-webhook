@@ -33,6 +33,8 @@ func (o Option) NewWebhookHandler() slog.Handler {
 	}
 }
 
+var _ slog.Handler = (*WebhookHandler)(nil)
+
 type WebhookHandler struct {
 	option Option
 	attrs  []slog.Attr
