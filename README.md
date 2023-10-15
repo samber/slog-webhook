@@ -65,7 +65,20 @@ type Option struct {
 
 	// optional: customize webhook event builder
 	Converter Converter
+
+	// optional: see slog.HandlerOptions
+	AddSource   bool
+	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
+```
+
+Other global parameters:
+
+```go
+slogwebhook.SourceKey = "source"
+slogwebhook.ContextKey = "extra"
+slogwebhook.ErrorKeys = []string{"error", "err"}
+slogwebhook.RequestIgnoreHeaders = false
 ```
 
 ### Supported attributes
@@ -99,7 +112,7 @@ import (
 	"net/http"
 	"time"
 
-	slogwebhhok "github.com/samber/slog-webhook"
+	slogwebhook "github.com/samber/slog-webhook"
 
 	"log/slog"
 )
@@ -107,7 +120,7 @@ import (
 func main() {
 	url := "https://webhook.site/xxxxxx"
 
-	logger := slog.New(slogwebhhok.Option{Level: slog.LevelDebug, Endpoint: url}.NewWebhookHandler())
+	logger := slog.New(slogwebhook.Option{Level: slog.LevelDebug, Endpoint: url}.NewWebhookHandler())
 	logger = logger.With("release", "v1.0.0")
 
 	req, _ := http.NewRequest(http.MethodGet, "https://api.screeb.app", nil)

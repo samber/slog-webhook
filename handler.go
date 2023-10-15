@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"log/slog"
+
+	slogcommon "github.com/samber/slog-common"
 )
 
 type Option struct {
@@ -19,6 +21,10 @@ type Option struct {
 
 	// optional: customize webhook event builder
 	Converter Converter
+
+	// optional: see slog.HandlerOptions
+	AddSource   bool
+	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
 
 func (o Option) NewWebhookHandler() slog.Handler {
@@ -51,14 +57,15 @@ func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
 		converter = h.option.Converter
 	}
 
-	payload := converter(h.attrs, record)
+	payload := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
+
 	return send(h.option.Endpoint, payload)
 }
 
 func (h *WebhookHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &WebhookHandler{
 		option: h.option,
-		attrs:  appendAttrsToGroup(h.groups, h.attrs, attrs),
+		attrs:  slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
 		groups: h.groups,
 	}
 }
@@ -89,7 +96,7 @@ func send(endpoint string, payload map[string]any) error {
 	}
 
 	req.Header.Add("content-type", `application/json`)
-	req.Header.Add("user-agent", `samber/slog-webhook`)
+	req.Header.Add("user-agent", name)
 
 	resp, err := client.Do(req)
 	if err != nil {
