@@ -57,18 +57,18 @@ GoDoc: [https://pkg.go.dev/github.com/samber/slog-webhook](https://pkg.go.dev/gi
 
 ```go
 type Option struct {
-    // log level (default: debug)
-	Level     slog.Leveler
+  // log level (default: debug)
+  Level     slog.Leveler
 
-	// URL
-	Endpoint string
+  // URL
+  Endpoint string
 
-	// optional: customize webhook event builder
-	Converter Converter
+  // optional: customize webhook event builder
+  Converter Converter
 
-	// optional: see slog.HandlerOptions
-	AddSource   bool
-	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
+  // optional: see slog.HandlerOptions
+  AddSource   bool
+  ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
 ```
 
@@ -98,9 +98,9 @@ Users must be of type `slog.Group`. Eg:
 
 ```go
 slog.Group("user",
-    slog.String("id", "user-123"),
-    slog.String("username", "samber"),
-    slog.Time("created_at", time.Now()),
+  slog.String("id", "user-123"),
+  slog.String("username", "samber"),
+  slog.Time("created_at", time.Now()),
 )
 ```
 
@@ -118,25 +118,25 @@ import (
 )
 
 func main() {
-	url := "https://webhook.site/xxxxxx"
+  url := "https://webhook.site/xxxxxx"
 
-	logger := slog.New(slogwebhook.Option{Level: slog.LevelDebug, Endpoint: url}.NewWebhookHandler())
-	logger = logger.With("release", "v1.0.0")
+  logger := slog.New(slogwebhook.Option{Level: slog.LevelDebug, Endpoint: url}.NewWebhookHandler())
+  logger = logger.With("release", "v1.0.0")
 
-	req, _ := http.NewRequest(http.MethodGet, "https://api.screeb.app", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-TOKEN", "1234567890")
+  req, _ := http.NewRequest(http.MethodGet, "https://api.screeb.app", nil)
+  req.Header.Set("Content-Type", "application/json")
+  req.Header.Set("X-TOKEN", "1234567890")
 
-	logger.
-		With(
-			slog.Group("user",
-				slog.String("id", "user-123"),
-				slog.Time("created_at", time.Now()),
-			),
-		).
-		With("request", req).
-		With("error", fmt.Errorf("an error")).
-		Error("a message")
+  logger.
+    With(
+      slog.Group("user",
+        slog.String("id", "user-123"),
+        slog.Time("created_at", time.Now()),
+      ),
+    ).
+    With("request", req).
+    With("error", fmt.Errorf("an error")).
+    Error("a message")
 }
 ```
 
