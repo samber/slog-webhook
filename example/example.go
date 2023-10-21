@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	slogwebhook "github.com/samber/slog-webhook"
+	slogwebhook "github.com/samber/slog-webhook/v2"
 
 	"log/slog"
 )

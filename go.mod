@@ -1,4 +1,4 @@
-module github.com/samber/slog-webhook
+module github.com/samber/slog-webhook/v2
 
 go 1.21
 

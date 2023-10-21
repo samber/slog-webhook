@@ -43,16 +43,16 @@ A [webhook](https://webhook.com) Handler for [slog](https://pkg.go.dev/log/slog)
 ## 🚀 Install
 
 ```sh
-go get github.com/samber/slog-webhook
+go get github.com/samber/slog-webhook/v2
 ```
 
 **Compatibility**: go >= 1.21
 
-No breaking changes will be made to exported APIs before v2.0.0.
+No breaking changes will be made to exported APIs before v3.0.0.
 
 ## 💡 Usage
 
-GoDoc: [https://pkg.go.dev/github.com/samber/slog-webhook](https://pkg.go.dev/github.com/samber/slog-webhook)
+GoDoc: [https://pkg.go.dev/github.com/samber/slog-webhook/v2](https://pkg.go.dev/github.com/samber/slog-webhook/v2)
 
 ### Handler options
 
@@ -113,7 +113,7 @@ import (
 	"net/http"
 	"time"
 
-	slogwebhook "github.com/samber/slog-webhook"
+	slogwebhook "github.com/samber/slog-webhook/v2"
 
 	"log/slog"
 )
