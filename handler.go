@@ -59,7 +59,11 @@ func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
 
 	payload := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
 
-	return send(h.option.Endpoint, payload)
+	go func() {
+		_ = send(h.option.Endpoint, payload)
+	}()
+
+	return nil
 }
 
 func (h *WebhookHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
