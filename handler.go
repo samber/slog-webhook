@@ -60,7 +60,7 @@ func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
 	payload := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
 
 	go func() {
-		_ = send(h.option.Endpoint, payload)
+		_ = send(h.option.Endpoint, ctx, payload)
 	}()
 
 	return nil
@@ -82,7 +82,7 @@ func (h *WebhookHandler) WithGroup(name string) slog.Handler {
 	}
 }
 
-func send(endpoint string, payload map[string]any) error {
+func send(endpoint string, ctx context.Context, payload map[string]any) error {
 	client := http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -94,7 +94,7 @@ func send(endpoint string, payload map[string]any) error {
 
 	body := bytes.NewBuffer(json)
 
-	req, err := http.NewRequest("POST", endpoint, body)
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, body)
 	if err != nil {
 		return err
 	}
