@@ -65,6 +65,7 @@ type Option struct {
 
   // URL
   Endpoint string
+	Timeout  time.Duration // default: 10s
 
   // optional: customize webhook event builder
   Converter Converter

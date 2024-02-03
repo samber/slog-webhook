@@ -18,6 +18,7 @@ type Option struct {
 
 	// URL
 	Endpoint string
+	Timeout  time.Duration // default: 10s
 
 	// optional: customize webhook event builder
 	Converter Converter
@@ -30,6 +31,10 @@ type Option struct {
 func (o Option) NewWebhookHandler() slog.Handler {
 	if o.Level == nil {
 		o.Level = slog.LevelDebug
+	}
+
+	if o.Timeout == 0 {
+		o.Timeout = 10 * time.Second
 	}
 
 	return &WebhookHandler{
@@ -60,7 +65,7 @@ func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
 	payload := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
 
 	go func() {
-		_ = send(h.option.Endpoint, ctx, payload)
+		_ = send(h.option.Endpoint, h.option.Timeout, payload)
 	}()
 
 	return nil
@@ -82,7 +87,7 @@ func (h *WebhookHandler) WithGroup(name string) slog.Handler {
 	}
 }
 
-func send(endpoint string, ctx context.Context, payload map[string]any) error {
+func send(endpoint string, timeout time.Duration, payload map[string]any) error {
 	client := http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -93,6 +98,9 @@ func send(endpoint string, ctx context.Context, payload map[string]any) error {
 	}
 
 	body := bytes.NewBuffer(json)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, body)
 	if err != nil {
