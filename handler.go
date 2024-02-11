@@ -37,6 +37,10 @@ func (o Option) NewWebhookHandler() slog.Handler {
 		o.Timeout = 10 * time.Second
 	}
 
+	if o.Converter == nil {
+		o.Converter = DefaultConverter
+	}
+
 	return &WebhookHandler{
 		option: o,
 		attrs:  []slog.Attr{},
@@ -57,12 +61,7 @@ func (h *WebhookHandler) Enabled(_ context.Context, level slog.Level) bool {
 }
 
 func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
-	converter := DefaultConverter
-	if h.option.Converter != nil {
-		converter = h.option.Converter
-	}
-
-	payload := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
+	payload := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
 
 	go func() {
 		_ = send(h.option.Endpoint, h.option.Timeout, payload)
