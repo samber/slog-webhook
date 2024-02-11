@@ -22,6 +22,8 @@ type Option struct {
 
 	// optional: customize webhook event builder
 	Converter Converter
+	// optional: custom marshaler
+	Marshaler func(v any) ([]byte, error)
 
 	// optional: see slog.HandlerOptions
 	AddSource   bool
@@ -39,6 +41,10 @@ func (o Option) NewWebhookHandler() slog.Handler {
 
 	if o.Converter == nil {
 		o.Converter = DefaultConverter
+	}
+
+	if o.Marshaler == nil {
+		o.Marshaler = json.Marshal
 	}
 
 	return &WebhookHandler{
