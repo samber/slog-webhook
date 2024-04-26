@@ -24,6 +24,8 @@ type Option struct {
 	Converter Converter
 	// optional: custom marshaler
 	Marshaler func(v any) ([]byte, error)
+	// optional: fetch attributes from context
+	AttrFromContext []func(ctx context.Context) []slog.Attr
 
 	// optional: see slog.HandlerOptions
 	AddSource   bool
@@ -47,6 +49,10 @@ func (o Option) NewWebhookHandler() slog.Handler {
 		o.Marshaler = json.Marshal
 	}
 
+	if o.AttrFromContext == nil {
+		o.AttrFromContext = []func(ctx context.Context) []slog.Attr{}
+	}
+
 	return &WebhookHandler{
 		option: o,
 		attrs:  []slog.Attr{},
@@ -67,10 +73,11 @@ func (h *WebhookHandler) Enabled(_ context.Context, level slog.Level) bool {
 }
 
 func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
-	payload := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record)
+	fromContext := slogcommon.ContextExtractor(ctx, h.option.AttrFromContext)
+	payload := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, append(h.attrs, fromContext...), h.groups, &record)
 
 	go func() {
-		_ = send(h.option.Endpoint, h.option.Timeout, payload)
+		_ = send(h.option.Endpoint, h.option.Timeout, h.option.Marshaler, payload)
 	}()
 
 	return nil
@@ -92,12 +99,12 @@ func (h *WebhookHandler) WithGroup(name string) slog.Handler {
 	}
 }
 
-func send(endpoint string, timeout time.Duration, payload map[string]any) error {
+func send(endpoint string, timeout time.Duration, marshaler func(v any) ([]byte, error), payload map[string]any) error {
 	client := http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
 
-	json, err := json.Marshal(payload)
+	json, err := marshaler(payload)
 	if err != nil {
 		return err
 	}
@@ -107,6 +114,7 @@ func send(endpoint string, timeout time.Duration, payload map[string]any) error 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
+	// @TODO: maintain a pool of tcp connections
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, body)
 	if err != nil {
 		return err
