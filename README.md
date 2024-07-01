@@ -77,12 +77,12 @@ type Option struct {
 
   // URL
   Endpoint string
-	Timeout  time.Duration // default: 10s
+  Timeout  time.Duration // default: 10s
 
   // optional: customize webhook event builder
   Converter Converter
-	// optional: custom marshaler
-	Marshaler func(v any) ([]byte, error)
+  // optional: custom marshaler
+  Marshaler func(v any) ([]byte, error)
   // optional: fetch attributes from context
   AttrFromContext []func(ctx context.Context) []slog.Attr
 

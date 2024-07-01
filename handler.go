@@ -76,6 +76,7 @@ func (h *WebhookHandler) Handle(ctx context.Context, record slog.Record) error {
 	fromContext := slogcommon.ContextExtractor(ctx, h.option.AttrFromContext)
 	payload := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, append(h.attrs, fromContext...), h.groups, &record)
 
+	// non-blocking
 	go func() {
 		_ = send(h.option.Endpoint, h.option.Timeout, h.option.Marshaler, payload)
 	}()
